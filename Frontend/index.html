@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <link rel="stylesheet" href="./src/style.css" />
+  <link rel="stylesheet" href="./src/options/options.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap"
+    rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Registration (MSWIL Oracle/Ebiz)</title>
+  <style>
+    .option {
+      margin: 5px 0;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .sub-option {
+      margin-left: 20px;
+      display: none;
+      /* hidden until expanded */
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="container">
+      <div class="logo-container">
+        <img src="./src/assets/logo.png" alt="MSWIL Logo" class="logo" />
+      </div>
+      <div class="head-cont">
+        <h2 class="title">Employee Registration</h2>
+        <a class="emp-list hidden" href="./src/employee/employee.html">
+          Go to Employee List ➡️
+        </a>
+      </div>
+      <form id="employeeForm">
+
+        <div class="md-box">
+          <div class="sm-box">
+            <label for="full_name">Full Name</label>
+            <input type="text" placeholder="Enter Your Name" name="full_name" id="full_name" required />
+          </div>
+
+          <div class="sm-box">
+            <label for="employee_code">Employee Code</label>
+            <input type="text" placeholder="Enter Employee Code" name="employee_code" id="employee_code" required />
+          </div>
+
+
+        </div>
+
+        <div class="md-box">
+          <div class="sm-box">
+            <label for="unit_name">Unit Name</label>
+            <input type="text" placeholder="Enter Unit Name" name="unit_name" id="unit_name" />
+          </div>
+
+          <div class="sm-box">
+            <label for="designation">Designation</label>
+            <div class="vr-box">
+              <select id="designation" name="designation">
+                <option disabled selected value="">Select Designation</option>
+                <!-- Dynamically data load in this field  -->
+              </select>
+              <i data-lucide="chevron-down" class="icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="md-box">
+          <div class="sm-box">
+            <label for="date_of_joining">Date of Joining</label>
+            <div class="vr-box">
+              <input type="date" name="date_of_joining" id="date_of_joining" required />
+              <i data-lucide="calendar" class="icon"></i>
+            </div>
+          </div>
+
+          <div class="sm-box">
+            <label for="department">Department</label>
+            <div class="vr-box">
+              <select id="department" name="department">
+                <option disabled selected value="">Select Department</option>
+              </select>
+              <i data-lucide="chevron-down" class="icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="md-box">
+
+
+          <div class="sm-box">
+            <label for="mobile_no">Mobile No</label>
+            <input type="text" placeholder="10-Digit Mobile No" name="mobile_no" id="mobile_no" pattern="\d{10}"
+              required />
+          </div>
+
+          <div class="sm-box">
+            <label for="department_head">Department Head</label>
+            <div class="vr-box">
+              <select id="department_head" name="department_head">
+                <option disabled selected value="">Select Department</option>
+              </select>
+              <i data-lucide="chevron-down" class="icon"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="md-box">
+          <div class="sm-box">
+            <label for="reporting_manager">Reporting Manager</label>
+            <input type="text" placeholder="Enter Reporting Manager" name="reporting_manager" id="reporting_manager"
+              required />
+          </div>
+          <div class="sm-box">
+            <label for="reporting_manager_email">Reporting Manager Email</label>
+            <input type="text" placeholder="Enter Reporting Manager email" name="reporting_manager_email"
+              id="reporting_manager_email" required />
+          </div>
+        </div>
+
+
+
+        <div class="md-box">
+          <div class="sm-box">
+            <label for="application_access">Application Access</label>
+            <div class="form-group" style="display: flex; flex-direction: column;">
+              <label>
+                <input type="radio" name="application_access" value="Oracle" disabled onclick="toggleTextarea()"> Oracle
+              </label>
+              <label>
+                <input type="radio" name="application_access" value="Ebiz" disabled onclick="toggleTextarea()"> E-Biz
+              </label>
+            </div>
+          </div>
+          <div class="sm-box">
+            <label for="company">Company Name</label>
+            <div class="vr-box"><select id="company" name="company">
+                <option disabled selected value="">Select Company</option>
+                <!-- Companies will load dynamically here -->
+              </select></div>
+          </div>
+        </div>
+
+        <div class="sm-box hidden" id="oracle-box">
+          <label for="oracle_textarea">Responsibility in Oracle</label>
+          <textarea name="oracle_textarea" id="oracle_textarea" rows="3"
+            placeholder="Enter responsibilities"></textarea>
+        </div>
+
+        <div class="sm-box last-box hidden" id="ebiz-box">
+          <label for="ebiz_textarea">Enter options in eBiz</label>
+
+          <!-- 🔹 New Employee ID input + Search -->
+          <div id="employee-options-box" style="margin-top: 15px; display: none;">
+            <!-- <label for="employee_id_input">Employee ID</label> -->
+            <div class="employee_id_box">
+              <input type="text" id="employee_id_input" placeholder="Enter Employee ID" />
+
+              <button type="button" id="search-options-btn" class="btn">Search Options</button>
+              <button type="button" class="btn" id="new-emp-code">Add New</button>
+            </div>
+
+            <!-- Options container -->
+            <div id="options-container" class="options-container" style="margin-top: 15px;"></div>
+          </div>
+        </div>
+
+
+        <div class="buttons">
+          <button type="submit" class="btn submit">Submit</button>
+          <button type="reset" class="btn reset">Reset</button>
+
+        </div>
+      </form>
+    </div>
+  </div>
+  <script type="module" src="./src/main.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="./src/options/options.js"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,120 @@
+
+
+.option-title{
+    text-align: center;
+}
+
+.options-container {
+  background: #fff;
+  padding: 15px;
+  border-radius: 8px;
+  /* box-shadow: 0 2px 6px rgba(0,0,0,0.1); */
+  max-width: 700px;
+  margin: auto;
+  
+}
+
+.option-wrapper {
+  margin: 6px 0;
+}
+
+
+
+.option-row {
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 5px;
+  transition: background 0.2s ease;
+}
+
+.option-row:hover {
+  background: #f3f4f6;
+}
+
+.option-row span {
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.option-row.active {
+  background-color: #f3f4f6; /* light gray, pick any */
+  border-radius: 4px;
+}
+
+.option-row input[type="radio"] {
+  margin-left: 10px;
+  margin-right: 3px;
+  cursor: pointer;
+}
+
+/* Toggle (+ / -) */
+.option-row .toggle {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  text-align: center;
+  line-height: 16px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #444;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 8px;
+  cursor: pointer;
+  background: #f9fafb;
+  transition: all 0.2s ease;
+}
+
+.option-row .toggle:hover {
+  background: #e5e7eb;
+}
+
+/* For disabled (leaf nodes) */
+.option-row .toggle.disabled {
+  color: #bbb;
+  cursor: default;
+  background: #f1f1f1;
+}
+
+.option-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.left-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.right-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.toggle-icon {
+  vertical-align: middle;
+  transition: transform 0.2s ease;
+}
+
+/* .sub-options {
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+}
+
+.sub-options.open {
+    opacity: 1;
+
+} */
+
+
+
+
+

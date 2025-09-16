@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employee List</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background: #f4f4f4;
+        }
+
+        tr:hover {
+            background: #f1f1f1;
+        }
+
+        .head-cont {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .head-cont a {
+            margin-right: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="head-cont">
+        <h2>Employee Records</h2>
+        <a href="../../index.html">Back</a>
+    </div>
+    <table id="employeeTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Full Name</th>
+                <th>Code</th>
+                <th>Unit</th>
+                <th>Designation</th>
+                <th>Department</th>
+                <th>Company Name</th>
+                <th>DOJ</th>
+                <th>Mobile</th>
+                <th>Department Head</th>
+                <th>Reporting Manager</th>
+                <th>Reporting Manager Email</th>
+                <th>App Access</th>
+                <th>Responsibilities in Oracle</th>
+                <th>Options in Ebiz</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be loaded here -->
+        </tbody>
+    </table>
+
+    <script src="employee.js"></script>
+</body>
+
+</html>
