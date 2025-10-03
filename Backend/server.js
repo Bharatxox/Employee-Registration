@@ -8,6 +8,7 @@ import departmentHeadRoutes from "./routes/departmentHeadRoutes.js";
 import optionsRoutes from "./routes/optionsRoutes.js";
 import approvalRoutes from "./routes/approvalRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
+import unitNameRoutes from "./routes/unitNameRoutes.js";
 
 const app = express();
 const PORT = 5000;
@@ -22,6 +23,7 @@ app.use("/api", departmentHeadRoutes);
 app.use("/api/options", optionsRoutes);
 app.use("/api", approvalRoutes);
 app.use("/api", companyRoutes);
+app.use("/api", unitNameRoutes);
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);

@@ -1,14 +1,14 @@
 import db from "../db.js";
 import { sendmail } from "../config/send-mail.js"; // your resend helper
 
-// 📩 Mail for Department Heah  (FYI with approve and denied buttons)
+// 📩 Mail for Department Head (FYI with approve and denied buttons)
 const sendApprovalMail = async (employee_code, head, approvalId) => {
   // Get employee details
   const [employeeData] = await db.query(
     `SELECT e.employee_id, e.full_name, e.employee_code, e.unit_name, 
           DATE_FORMAT(e.date_of_joining, '%Y-%m-%d') AS date_of_joining,
           e.created_at, e.mobile_no, e.responsibility_in_oracle, 
-          e.options_in_ebiz,
+          e.options_in_ebiz, e.employee_email,
           c.company_name
    FROM Employee e
    LEFT JOIN Company c ON e.company_id = c.company_id
@@ -44,6 +44,9 @@ const sendApprovalMail = async (employee_code, head, approvalId) => {
       }</p>
       <p style="margin: 8px 0;"><b style="color:#374151;">Employee Code:</b> ${
         emp.employee_code
+      }</p>
+      <p style="margin: 8px 0;"><b style="color:#374151;">Email:</b> ${
+        emp.employee_email || "-" // 👈 Added email display
       }</p>
       <p style="margin: 8px 0;"><b style="color:#374151;">Unit:</b> ${
         emp.unit_name || "-"
@@ -125,7 +128,7 @@ const sendReportingManagerMail = async (
     `SELECT e.employee_id, e.full_name, e.employee_code, e.unit_name, 
           DATE_FORMAT(e.date_of_joining, '%Y-%m-%d') AS date_of_joining,
           e.created_at, e.mobile_no, e.responsibility_in_oracle, 
-          e.options_in_ebiz,
+          e.options_in_ebiz, e.employee_email,
           c.company_name
    FROM Employee e
    LEFT JOIN Company c ON e.company_id = c.company_id
@@ -158,6 +161,9 @@ const sendReportingManagerMail = async (
       <p style="margin: 8px 0;"><b style="color:#374151;">Employee Code:</b> ${
         emp.employee_code
       }</p>
+      <p style="margin: 8px 0;"><b style="color:#374151;">Email:</b> ${
+        emp.employee_email || "-" // 👈 Added email display
+      }</p>
       <p style="margin: 8px 0;"><b style="color:#374151;">Unit:</b> ${
         emp.unit_name || "-"
       }</p>
@@ -170,7 +176,6 @@ const sendReportingManagerMail = async (
       <p style="margin: 8px 0;"><b style="color:#374151;">Company Name:</b> ${
         emp.company_name || "-"
       }</p>
-
 
       ${
         emp.responsibility_in_oracle && emp.responsibility_in_oracle.trim()
@@ -194,7 +199,7 @@ const sendReportingManagerMail = async (
   </div>
   `;
 
-  console.log(reportingManagerEmail);
+  console.log("📧 Sending Reporting Manager mail to:", reportingManagerEmail);
 
   await sendmail({
     to: reportingManagerEmail,
@@ -248,6 +253,10 @@ export const createApproval = async ({ employee_code, head_id }) => {
       );
     }
 
+    console.log(
+      `✅ Approval created for ${employee_code} with head ${head_id}`
+    );
+
     return { message: "Approval request created and mail sent", approvalId };
   } catch (err) {
     console.error("Approval create error:", err);
@@ -259,9 +268,34 @@ export const createApproval = async ({ employee_code, head_id }) => {
 export const approveRequest = async (req, res) => {
   try {
     const { id } = req.params;
+    const [approvalRows] = await db.query(
+      `SELECT ea.*, dh.head_name 
+       FROM EmployeeApprovals ea 
+       JOIN DivisionalHead dh ON ea.head_id = dh.head_id 
+       WHERE ea.approval_id = ?`,
+      [id]
+    );
+
+    if (approvalRows.length === 0) {
+      return res.status(404).json({ error: "Approval request not found" });
+    }
+
+    const approval = approvalRows[0];
+
+    // Update the approval status
     await db.query(
       "UPDATE EmployeeApprovals SET status = 'Approved', updated_at = NOW() WHERE approval_id = ?",
       [id]
+    );
+
+    // Update the employee record with the department head who approved
+    await db.query(
+      "UPDATE Employee SET approval_department_head = ? WHERE employee_code = ?",
+      [approval.head_name, approval.employee_code]
+    );
+
+    console.log(
+      `✅ Employee ${approval.employee_code} approved by ${approval.head_name}`
     );
     res.send(`
       <!DOCTYPE html>

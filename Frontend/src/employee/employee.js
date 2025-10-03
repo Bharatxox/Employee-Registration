@@ -8,6 +8,29 @@ function formatDate(isoDate) {
   });
 }
 
+// Function to get approval status
+function getApprovalStatus(approvalDepartmentHead, approvalDate) {
+  if (approvalDepartmentHead && approvalDate) {
+    return '<span class="approved">Approved</span>';
+  } else if (approvalDepartmentHead) {
+    return '<span class="approved">Approved</span>';
+  } else {
+    return '<span class="pending">Pending</span>';
+  }
+}
+
+// Function to format approval information
+function formatApprovalInfo(approvalDepartmentHead, approvalDate) {
+  if (!approvalDepartmentHead) return "-";
+
+  if (approvalDate) {
+    const formattedDate = formatDate(approvalDate);
+    return `${approvalDepartmentHead}<br><small>on ${formattedDate}</small>`;
+  }
+
+  return approvalDepartmentHead;
+}
+
 async function loadEmployees() {
   try {
     const res = await fetch("http://localhost:5000/api/employees");
@@ -29,10 +52,18 @@ async function loadEmployees() {
         <td>${emp.company_name}</td>
         <td>${formatDate(emp.date_of_joining)}</td>
         <td>${emp.mobile_no}</td>
-        <td>${emp.divisional_head_name}</td>
-        <td>${emp.reporting_manager}</td>
-        <td>${emp.reporting_manager_email}</td>
-        <td>${emp.application_access}</td>
+        <td>${emp.divisional_head_name || "-"}</td>
+        <td>${formatApprovalInfo(
+          emp.approval_department_head,
+          emp.approval_date
+        )}</td>
+        <td>${getApprovalStatus(
+          emp.approval_department_head,
+          emp.approval_date
+        )}</td>
+        <td>${emp.reporting_manager || "-"}</td>
+        <td>${emp.reporting_manager_email || "-"}</td>
+        <td>${emp.application_access || "-"}</td>
         <td>${emp.responsibility_in_oracle || "-"}</td>
         <td>${emp.options_in_ebiz || "-"}</td>
       `;

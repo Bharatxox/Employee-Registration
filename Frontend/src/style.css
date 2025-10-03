@@ -337,3 +337,179 @@ input:-webkit-autofill {
    flex-direction: column;
   }
 }
+
+/* Autocomplete container */
+.autocomplete-container {
+  position: relative;
+  width: 100%;
+}
+
+.autocomplete-container input[type="text"] {
+  width: 100%;
+  /* padding: 8px 12px; */
+  /* border: 1px solid #ccc; */
+  /* border-radius: 4px; */
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.autocomplete-container input[type="text"]:focus {
+  outline: none;
+  /* border-color: #b71c1c; */
+  box-shadow: 0 0 4px rgba(226, 74, 74, 0.4);
+}
+
+.autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.autocomplete-dropdown.show {
+  display: block;
+}
+
+.option-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+}
+
+.option-item:hover {
+  background-color: #f8f9fa;
+}
+
+.option-item.highlighted {
+  background-color: #b71c1c;
+  color: white;
+}
+
+.option-item.no-result {
+  color: #999;
+  cursor: default;
+}
+
+.option-item:last-child {
+  border-bottom: none;
+}
+
+/* Custom scrollbar */
+.autocomplete-dropdown::-webkit-scrollbar {
+  width: 8px;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.autocomplete-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+#unit_search {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.date-cont{
+  position: relative;
+  width: 100%;
+}
+/* .dropdown {
+    width: -webkit-fill-available;
+    position: absolute;
+    top: 0;
+    background: #fff;
+    border: 1px solid #ccc; 
+     border-top: none;
+    border-radius: 0 0 4px 4px;
+    display: none;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+} */
+.dropdown {
+    width: -webkit-fill-available;
+    position: absolute;
+    top: 100%; /* Position below the input */
+    left: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    display: none;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    /* Remove any manual top/left positioning */
+}
+
+.dropdown.show {
+    display: flex; /* Show when needed */
+}
+
+.scroll-box {
+    width: 50%;
+    height: 120px;
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE */
+    border-right: 1px solid #e0e0e0; /* Add separator between month and year */
+}
+
+.scroll-box:last-child {
+    border-right: none; /* Remove border from last box */
+}
+
+.scroll-box::-webkit-scrollbar {
+    display: none;
+}
+
+.scroll-item {
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.scroll-item:hover,
+.scroll-item.active {
+    background: #b71c1c;
+    color: #fff;
+}
+
+/* Style for the date input to match your existing form */
+#dateInput {
+    width: 100%;
+    /* padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer; */
+}
+
+/* #dateInput:focus {
+    outline: none;
+    border-color: #b71c1c;
+} */
+
+/* Ensure the vr-box has relative positioning */
+.vr-box {
+    position: relative;
+    width: 100%;
+}

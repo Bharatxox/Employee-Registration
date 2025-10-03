@@ -44,54 +44,64 @@
 
         <div class="md-box">
           <div class="sm-box">
-            <label for="full_name">Full Name</label>
-            <input type="text" placeholder="Enter Your Name" name="full_name" id="full_name" required />
-          </div>
-
-          <div class="sm-box">
             <label for="employee_code">Employee Code</label>
             <input type="text" placeholder="Enter Employee Code" name="employee_code" id="employee_code" required />
           </div>
-
-
-        </div>
-
-        <div class="md-box">
           <div class="sm-box">
-            <label for="unit_name">Unit Name</label>
-            <input type="text" placeholder="Enter Unit Name" name="unit_name" id="unit_name" />
-          </div>
-
-          <div class="sm-box">
-            <label for="designation">Designation</label>
-            <div class="vr-box">
-              <select id="designation" name="designation">
-                <option disabled selected value="">Select Designation</option>
-                <!-- Dynamically data load in this field  -->
-              </select>
-              <i data-lucide="chevron-down" class="icon"></i>
-            </div>
+            <label for="full_name">Full Name</label>
+            <input type="text" placeholder="Enter Your Name" name="full_name" id="full_name" required />
           </div>
         </div>
 
         <div class="md-box">
           <div class="sm-box">
-            <label for="date_of_joining">Date of Joining</label>
-            <div class="vr-box">
-              <input type="date" name="date_of_joining" id="date_of_joining" required />
-              <i data-lucide="calendar" class="icon"></i>
+            <label for="unit_search">Unit Name</label>
+            <div class="autocomplete-container">
+              <input type="text" id="unit_search" name="unit_search" placeholder="Type to search units..."
+                autocomplete="off">
+              <input type="hidden" id="unit_name" name="unit_name" required>
+              <div class="autocomplete-dropdown" id="unit_dropdown">
+                <!-- Results will appear here -->
+              </div>
             </div>
           </div>
 
           <div class="sm-box">
-            <label for="department">Department</label>
-            <div class="vr-box">
-              <select id="department" name="department">
-                <option disabled selected value="">Select Department</option>
-              </select>
-              <i data-lucide="chevron-down" class="icon"></i>
+            <label for="designation_search">Designation</label>
+            <div class="autocomplete-container">
+              <input type="text" id="designation_search" placeholder="Type to search designations..."
+                autocomplete="off">
+              <input type="hidden" id="designation" name="designation" required>
+              <div class="autocomplete-dropdown" id="designation_dropdown"></div>
             </div>
           </div>
+        </div>
+
+        <div class="md-box">
+          <div class="sm-box">
+            <label for="dateInput">Date of Joining</label>
+            <div class="vr-box date-cont">
+              <input type="text" id="dateInput" placeholder="Select Month & Year" readonly>
+
+              <div class="dropdown" id="dropdown">
+                <div class="scroll-box" id="monthBox"></div>
+                <div class="scroll-box" id="yearBox"></div>
+              </div>
+
+              <!-- Hidden input for actual form data -->
+              <input type="hidden" id="date_of_joining" name="date_of_joining">
+            </div>
+          </div>
+
+          <div class="sm-box">
+            <label for="department_search">Department</label>
+            <div class="autocomplete-container">
+              <input type="text" id="department_search" placeholder="Type to search departments..." autocomplete="off">
+              <input type="hidden" id="department" name="department" required>
+              <div class="autocomplete-dropdown" id="department_dropdown"></div>
+            </div>
+          </div>
+
         </div>
 
         <div class="md-box">
@@ -104,13 +114,27 @@
           </div>
 
           <div class="sm-box">
-            <label for="department_head">Department Head</label>
-            <div class="vr-box">
-              <select id="department_head" name="department_head">
-                <option disabled selected value="">Select Department</option>
-              </select>
-              <i data-lucide="chevron-down" class="icon"></i>
+            <label for="department_head_search">Department Head</label>
+            <div class="autocomplete-container">
+              <input type="text" id="department_head_search" placeholder="Type to search department heads..."
+                autocomplete="off">
+              <input type="hidden" id="department_head" name="department_head" required>
+              <div class="autocomplete-dropdown" id="department_head_dropdown"></div>
             </div>
+          </div>
+        </div>
+
+        <div class="md-box">
+          <div class="sm-box">
+            <label for="employee_email"> Email</label>
+            <input type="text" placeholder="Enter your email" name="employee_email" id="employee_email" required />
+          </div>
+          <div class="sm-box">
+            <label for="company">Company Name</label>
+            <div class="vr-box"><select id="company" name="company">
+                <option disabled selected value="">Select Company</option>
+                <!-- Companies will load dynamically here -->
+              </select></div>
           </div>
         </div>
 
@@ -129,6 +153,8 @@
 
 
 
+
+
         <div class="md-box">
           <div class="sm-box">
             <label for="application_access">Application Access</label>
@@ -140,13 +166,6 @@
                 <input type="radio" name="application_access" value="Ebiz" disabled onclick="toggleTextarea()"> E-Biz
               </label>
             </div>
-          </div>
-          <div class="sm-box">
-            <label for="company">Company Name</label>
-            <div class="vr-box"><select id="company" name="company">
-                <option disabled selected value="">Select Company</option>
-                <!-- Companies will load dynamically here -->
-              </select></div>
           </div>
         </div>
 
@@ -165,6 +184,7 @@
             <div class="employee_id_box">
               <input type="text" id="employee_id_input" placeholder="Enter Employee ID" />
 
+              <!-- <button type="button" id="copy" class="btn" title="Copy">Copy</button> -->
               <button type="button" id="search-options-btn" class="btn">Search Options</button>
               <button type="button" class="btn" id="new-emp-code">Add New</button>
             </div>

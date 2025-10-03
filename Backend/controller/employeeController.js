@@ -17,27 +17,29 @@ export const addEmployee = async (req, res) => {
     reporting_manager,
     reporting_manager_email,
     head_id,
-    company_id, // 👈 New: assign specific head
+    company_id,
+    employee_email,
   } = req.body;
 
   const sql = `
-    INSERT INTO employee (
-      full_name, employee_code, unit_name, date_of_joining, mobile_no,
-      application_access, responsibility_in_oracle, options_in_ebiz,
-      reporting_manager, reporting_manager_email, company_id
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON DUPLICATE KEY UPDATE
-      full_name = VALUES(full_name),
-      unit_name = VALUES(unit_name),
-      date_of_joining = VALUES(date_of_joining),
-      mobile_no = VALUES(mobile_no),
-      application_access = VALUES(application_access),
-      responsibility_in_oracle = VALUES(responsibility_in_oracle),
-      options_in_ebiz = VALUES(options_in_ebiz),
-      reporting_manager = VALUES(reporting_manager),
-      reporting_manager_email = VALUES(reporting_manager_email),
-      company_id = VALUES(company_id)
-  `;
+  INSERT INTO employee (
+    full_name, employee_code, unit_name, date_of_joining, mobile_no,
+    application_access, responsibility_in_oracle, options_in_ebiz,
+    reporting_manager, reporting_manager_email, company_id, employee_email
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ON DUPLICATE KEY UPDATE
+    full_name = VALUES(full_name),
+    unit_name = VALUES(unit_name),
+    date_of_joining = VALUES(date_of_joining),
+    mobile_no = VALUES(mobile_no),
+    application_access = VALUES(application_access),
+    responsibility_in_oracle = VALUES(responsibility_in_oracle),
+    options_in_ebiz = VALUES(options_in_ebiz),
+    reporting_manager = VALUES(reporting_manager),
+    reporting_manager_email = VALUES(reporting_manager_email),
+    company_id = VALUES(company_id),
+    employee_email = VALUES(employee_email)
+`;
 
   try {
     const [result] = await db.query(sql, [
@@ -52,8 +54,10 @@ export const addEmployee = async (req, res) => {
       reporting_manager,
       reporting_manager_email,
       company_id,
+      employee_email,
     ]);
 
+    // Rest of the code remains the same...
     // Get employee_id
     const [rows] = await db.query(
       `SELECT employee_id FROM employee WHERE employee_code = ?`,
@@ -147,6 +151,7 @@ export const addEmployee = async (req, res) => {
 };
 
 // 🔹 Show All Employees
+// 🔹 Show All Employees
 export const showEmployee = async (req, res) => {
   const sql = `
     SELECT 
@@ -157,10 +162,12 @@ export const showEmployee = async (req, res) => {
       DATE_FORMAT(e.date_of_joining, '%Y-%m-%d') AS date_of_joining,
       e.reporting_manager,
       e.reporting_manager_email,
+      e.employee_email,
       e.mobile_no, 
       e.responsibility_in_oracle, 
       e.options_in_ebiz, 
       e.application_access,
+      e.approval_department_head,
       d.department_name, 
       g.designation_name,
       dh.head_name AS divisional_head_name,
@@ -189,7 +196,7 @@ export const getEmployeeByCode = async (req, res) => {
   const { employee_code } = req.params;
 
   const sql = `
-    SELECT employee_id, full_name, employee_code, unit_name 
+    SELECT employee_id, full_name, employee_code, unit_name, employee_email
     FROM Employee 
     WHERE employee_code = ?
     LIMIT 1
