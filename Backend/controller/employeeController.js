@@ -1,4 +1,4 @@
-import db from "../db.js";
+import { pool, sql } from "../db.js";
 import { createApproval } from "./approvalController.js";
 
 // 🔹 Add or Update Employee
@@ -21,99 +21,135 @@ export const addEmployee = async (req, res) => {
     employee_email,
   } = req.body;
 
-  const sql = `
-  INSERT INTO employee (
-    full_name, employee_code, unit_name, date_of_joining, mobile_no,
-    application_access, responsibility_in_oracle, options_in_ebiz,
-    reporting_manager, reporting_manager_email, company_id, employee_email
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  ON DUPLICATE KEY UPDATE
-    full_name = VALUES(full_name),
-    unit_name = VALUES(unit_name),
-    date_of_joining = VALUES(date_of_joining),
-    mobile_no = VALUES(mobile_no),
-    application_access = VALUES(application_access),
-    responsibility_in_oracle = VALUES(responsibility_in_oracle),
-    options_in_ebiz = VALUES(options_in_ebiz),
-    reporting_manager = VALUES(reporting_manager),
-    reporting_manager_email = VALUES(reporting_manager_email),
-    company_id = VALUES(company_id),
-    employee_email = VALUES(employee_email)
-`;
-
   try {
-    const [result] = await db.query(sql, [
-      full_name,
-      employee_code,
-      unit_name,
-      date_of_joining,
-      mobile_no,
-      application_access,
-      responsibility_in_oracle,
-      options_in_ebiz,
-      reporting_manager,
-      reporting_manager_email,
-      company_id,
-      employee_email,
-    ]);
+    // SQL Server doesn't have ON DUPLICATE KEY UPDATE, so we use MERGE
+    const mergeSql = `
+      MERGE Employee AS target
+      USING (SELECT @employee_code AS employee_code) AS source
+      ON target.employee_code = source.employee_code
+      WHEN MATCHED THEN
+        UPDATE SET 
+          full_name = @full_name,
+          unit_name = @unit_name,
+          date_of_joining = @date_of_joining,
+          mobile_no = @mobile_no,
+          application_access = @application_access,
+          responsibility_in_oracle = @responsibility_in_oracle,
+          options_in_ebiz = @options_in_ebiz,
+          reporting_manager = @reporting_manager,
+          reporting_manager_email = @reporting_manager_email,
+          company_id = @company_id,
+          employee_email = @employee_email
+      WHEN NOT MATCHED THEN
+        INSERT (
+          full_name, employee_code, unit_name, date_of_joining, mobile_no,
+          application_access, responsibility_in_oracle, options_in_ebiz,
+          reporting_manager, reporting_manager_email, company_id, employee_email
+        ) VALUES (
+          @full_name, @employee_code, @unit_name, @date_of_joining, @mobile_no,
+          @application_access, @responsibility_in_oracle, @options_in_ebiz,
+          @reporting_manager, @reporting_manager_email, @company_id, @employee_email
+        );
+    `;
 
-    // Rest of the code remains the same...
+    const result = await pool
+      .request()
+      .input("full_name", sql.VarChar, full_name)
+      .input("employee_code", sql.VarChar, employee_code)
+      .input("unit_name", sql.VarChar, unit_name)
+      .input("date_of_joining", sql.Date, date_of_joining)
+      .input("mobile_no", sql.BigInt, mobile_no)
+      .input("application_access", sql.VarChar, application_access)
+      .input("responsibility_in_oracle", sql.VarChar, responsibility_in_oracle)
+      .input("options_in_ebiz", sql.VarChar, options_in_ebiz)
+      .input("reporting_manager", sql.VarChar, reporting_manager)
+      .input("reporting_manager_email", sql.VarChar, reporting_manager_email)
+      .input("company_id", sql.Int, company_id)
+      .input("employee_email", sql.VarChar, employee_email)
+      .query(mergeSql);
+
     // Get employee_id
-    const [rows] = await db.query(
-      `SELECT employee_id FROM employee WHERE employee_code = ?`,
-      [employee_code]
-    );
-    const employeeId = rows[0].employee_id;
+    const employeeResult = await pool
+      .request()
+      .input("employee_code", sql.VarChar, employee_code)
+      .query(
+        "SELECT employee_id FROM employee WHERE employee_code = @employee_code"
+      );
+
+    const employeeId = employeeResult.recordset[0]?.employee_id;
 
     // Department (store dept + head_id together)
     if (department_id && head_id) {
-      await db.query(
-        `
-        INSERT INTO employeedepartment (employee_id, department_id, head_id)
-        VALUES (?, ?, ?)
-        ON DUPLICATE KEY UPDATE 
-          department_id = VALUES(department_id),
-          head_id = VALUES(head_id)
-        `,
-        [employeeId, department_id, head_id]
-      );
+      const deptMergeSql = `
+        MERGE EmployeeDepartment AS target
+        USING (SELECT @employeeId AS employee_id, @department_id AS department_id) AS source
+        ON target.employee_id = source.employee_id
+        WHEN MATCHED THEN
+          UPDATE SET 
+            department_id = @department_id,
+            head_id = @head_id
+        WHEN NOT MATCHED THEN
+          INSERT (employee_id, department_id, head_id)
+          VALUES (@employeeId, @department_id, @head_id);
+      `;
+
+      await pool
+        .request()
+        .input("employeeId", sql.Int, employeeId)
+        .input("department_id", sql.Int, department_id)
+        .input("head_id", sql.Int, head_id)
+        .query(deptMergeSql);
     }
 
     // Designation (upsert style)
     if (designation_id) {
-      await db.query(
-        `
-        INSERT INTO employeedesignation (employee_id, designation_id)
-        VALUES (?, ?)
-        ON DUPLICATE KEY UPDATE designation_id = VALUES(designation_id)
-        `,
-        [employeeId, designation_id]
-      );
+      const designationMergeSql = `
+        MERGE EmployeeDesignation AS target
+        USING (SELECT @employeeId AS employee_id, @designation_id AS designation_id) AS source
+        ON target.employee_id = source.employee_id
+        WHEN MATCHED THEN
+          UPDATE SET designation_id = @designation_id
+        WHEN NOT MATCHED THEN
+          INSERT (employee_id, designation_id)
+          VALUES (@employeeId, @designation_id);
+      `;
+
+      await pool
+        .request()
+        .input("employeeId", sql.Int, employeeId)
+        .input("designation_id", sql.Int, designation_id)
+        .query(designationMergeSql);
     }
 
     // Clone options from reference employee
     if (options_in_ebiz) {
-      const [refOptions] = await db.query(
-        `SELECT option_id, value FROM employee_option_values WHERE employee_code = ?`,
-        [options_in_ebiz]
-      );
-
-      if (refOptions.length > 0) {
-        await db.query(
-          `DELETE FROM employee_option_values WHERE employee_code = ?`,
-          [employee_code]
+      const refOptionsResult = await pool
+        .request()
+        .input("options_in_ebiz", sql.VarChar, options_in_ebiz)
+        .query(
+          "SELECT option_id, value FROM employee_option_values WHERE employee_code = @options_in_ebiz"
         );
 
-        const insertValues = refOptions.map((opt) => [
-          employee_code,
-          opt.option_id,
-          opt.value,
-        ]);
+      if (refOptionsResult.recordset.length > 0) {
+        // Delete existing options
+        await pool
+          .request()
+          .input("employee_code", sql.VarChar, employee_code)
+          .query(
+            "DELETE FROM employee_option_values WHERE employee_code = @employee_code"
+          );
 
-        await db.query(
-          `INSERT INTO employee_option_values (employee_code, option_id, value) VALUES ?`,
-          [insertValues]
-        );
+        // Insert new options one by one
+        for (const opt of refOptionsResult.recordset) {
+          await pool
+            .request()
+            .input("employee_code", sql.VarChar, employee_code)
+            .input("option_id", sql.VarChar, opt.option_id)
+            .input("value", sql.VarChar, opt.value).query(`
+              INSERT INTO employee_option_values (employee_code, option_id, value) 
+              VALUES (@employee_code, @option_id, @value)
+            `);
+        }
       }
     }
 
@@ -127,21 +163,21 @@ export const addEmployee = async (req, res) => {
     }
 
     if (company_id) {
-      const [companyRows] = await db.query(
-        "SELECT company_id FROM Company WHERE company_id = ?",
-        [company_id]
-      );
+      const companyResult = await pool
+        .request()
+        .input("company_id", sql.Int, company_id)
+        .query("SELECT company_id FROM Company WHERE company_id = @company_id");
 
-      if (companyRows.length === 0) {
+      if (companyResult.recordset.length === 0) {
         return res.status(400).json({ error: "Invalid company_id" });
       }
     }
 
+    const isUpdate = result.rowsAffected[0] > 1;
     res.status(201).json({
-      message:
-        result.affectedRows > 1
-          ? "Employee updated successfully"
-          : "Employee added successfully",
+      message: isUpdate
+        ? "Employee updated successfully"
+        : "Employee added successfully",
       id: employeeId,
     });
   } catch (err) {
@@ -151,7 +187,6 @@ export const addEmployee = async (req, res) => {
 };
 
 // 🔹 Show All Employees
-// 🔹 Show All Employees
 export const showEmployee = async (req, res) => {
   const sql = `
     SELECT 
@@ -159,7 +194,7 @@ export const showEmployee = async (req, res) => {
       e.full_name, 
       e.employee_code, 
       e.unit_name, 
-      DATE_FORMAT(e.date_of_joining, '%Y-%m-%d') AS date_of_joining,
+      CONVERT(VARCHAR(10), e.date_of_joining, 120) AS date_of_joining,
       e.reporting_manager,
       e.reporting_manager_email,
       e.employee_email,
@@ -183,8 +218,8 @@ export const showEmployee = async (req, res) => {
   `;
 
   try {
-    const [results] = await db.query(sql);
-    res.json(results);
+    const result = await pool.request().query(sql);
+    res.json(result.recordset);
   } catch (err) {
     console.error("Error fetching employees:", err);
     res.status(500).json({ error: "Database error" });
@@ -198,18 +233,20 @@ export const getEmployeeByCode = async (req, res) => {
   const sql = `
     SELECT employee_id, full_name, employee_code, unit_name, employee_email
     FROM Employee 
-    WHERE employee_code = ?
-    LIMIT 1
+    WHERE employee_code = @employee_code
   `;
 
   try {
-    const [results] = await db.query(sql, [employee_code]);
+    const result = await pool
+      .request()
+      .input("employee_code", sql.VarChar, employee_code)
+      .query(sql);
 
-    if (results.length === 0) {
+    if (result.recordset.length === 0) {
       return res.status(404).json({ message: "Employee not found" });
     }
 
-    res.json(results[0]);
+    res.json(result.recordset[0]);
   } catch (err) {
     console.error("Error fetching employee:", err);
     res.status(500).json({ error: "Database error" });
@@ -224,21 +261,23 @@ export const createMinimalEmployee = async (req, res) => {
     return res.status(400).json({ error: "Employee code is required" });
   }
 
-  const sql = `
-    INSERT INTO Employee (employee_code, full_name, unit_name, date_of_joining)
-    VALUES (?, '', NULL, NULL)
-  `;
-
   try {
-    const [result] = await db.query(sql, [employee_code]);
+    const result = await pool
+      .request()
+      .input("employee_code", sql.VarChar, employee_code).query(`
+        INSERT INTO Employee (employee_code, full_name, unit_name, date_of_joining)
+        OUTPUT INSERTED.employee_id
+        VALUES (@employee_code, '', NULL, NULL)
+      `);
 
     res.status(201).json({
       message: "New employee created",
-      employee_id: result.insertId,
+      employee_id: result.recordset[0].employee_id,
       employee_code,
     });
   } catch (err) {
-    if (err.code === "ER_DUP_ENTRY") {
+    if (err.number === 2627) {
+      // SQL Server duplicate key error
       return res.status(400).json({ error: "Employee code already exists" });
     }
     res.status(500).json({ error: err.message });
@@ -249,23 +288,25 @@ export const createMinimalEmployee = async (req, res) => {
 export const deleteMinimalEmployee = async (req, res) => {
   const { empCode } = req.params;
   console.log(empCode);
-  try {
-    // First, try deleting the employee
-    const [result] = await db.query(
-      "DELETE FROM Employee WHERE employee_code = ?",
-      [empCode]
-    );
 
-    if (result.affectedRows === 0) {
-      // No employee found with this empCode
+  try {
+    // Delete related options first (due to foreign key constraints)
+    await pool
+      .request()
+      .input("empCode", sql.VarChar, empCode)
+      .query(
+        "DELETE FROM employee_option_values WHERE employee_code = @empCode"
+      );
+
+    // Then delete the employee
+    const result = await pool
+      .request()
+      .input("empCode", sql.VarChar, empCode)
+      .query("DELETE FROM Employee WHERE employee_code = @empCode");
+
+    if (result.rowsAffected[0] === 0) {
       return res.status(404).json({ error: `Employee ${empCode} not found` });
     }
-
-    // Delete related options only if employee existed
-    await db.query(
-      "DELETE FROM employee_option_values WHERE employee_code = ?",
-      [empCode]
-    );
 
     res.json({ message: `Employee ${empCode} deleted successfully` });
   } catch (err) {

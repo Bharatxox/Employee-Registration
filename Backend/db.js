@@ -1,25 +1,28 @@
 // db.js
-import mysql from "mysql2/promise"; // 👈 use the promise wrapper
+import sql from "mssql";
 
-const db = mysql.createPool({
-  host: "localhost",
-  user: "root",
-  password: "Bharat@123",
+const dbConfig = {
+  server: "localhost\\SQLEXPRESS", // Update with your server name
   database: "form",
-  waitForConnections: true,
-  connectionLimit: 10,
-  queueLimit: 0,
-});
+  user: "sa",
+  password: "Bharat@123", // Use the password that worked in SSMS
+  options: {
+    encrypt: false,
+    trustServerCertificate: true,
+    enableArithAbort: true,
+  },
+};
 
-// Optional test connection
+// Create connection pool
+let pool;
+
 (async () => {
   try {
-    const conn = await db.getConnection();
-    console.log("✅ Connected to MySQL");
-    conn.release();
+    pool = await sql.connect(dbConfig);
+    console.log("✅ Connected to SQL Server");
   } catch (err) {
-    console.error("❌ Database connection failed:", err.message);
+    console.error("❌ SQL Server connection failed:", err.message);
   }
 })();
 
-export default db;
+export { pool, sql };
