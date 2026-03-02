@@ -2,10 +2,10 @@
 import sql from "mssql";
 
 const dbConfig = {
-  server: "localhost\\SQLEXPRESS", // Update with your server name
+  server: "10.240.48.108", // Update with your server name
   database: "form",
-  user: "sa",
-  password: "Bharat@123", // Use the password that worked in SSMS
+  user: "testadmin",
+  password: "Ebizon2022", // Use the password that worked in SSMS
   options: {
     encrypt: false,
     trustServerCertificate: true,
